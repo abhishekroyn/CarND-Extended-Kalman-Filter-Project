@@ -91,7 +91,9 @@ int main() {
             meas_package.timestamp_ = timestamp;
           }
 
-          if (sensor_type.compare("L") == 0) {
+          if ((sensor_type.compare("L") == 0) || (sensor_type.compare("R") == 0)) {
+//          if (sensor_type.compare("L") == 0) {
+//          if (sensor_type.compare("R") == 0) {
             float x_gt;
             float y_gt;
             float vx_gt;
@@ -130,7 +132,7 @@ int main() {
 
             VectorXd RMSE = tools.CalculateRMSE(estimations, ground_truth);
 
-            std::cout << "rmse_x = " << RMSE(0) << " rmse_y = " << RMSE(1) << " rmse_vx = " << RMSE(2) << " rmse_vy = " << RMSE(3) << std::endl;
+//            std::cout << "rmse_x = " << RMSE(0) << " rmse_y = " << RMSE(1) << " rmse_vx = " << RMSE(2) << " rmse_vy = " << RMSE(3) << std::endl;
 
             json msgJson;
             msgJson["estimate_x"] = p_x;
@@ -142,7 +144,7 @@ int main() {
             auto msg = "42[\"estimate_marker\"," + msgJson.dump() + "]";
             // std::cout << msg << std::endl;
             ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
-          } else if (sensor_type.compare("R") == 0) {
+          } else {
             json msgJson;
             msgJson["estimate_x"] = 0;
             msgJson["estimate_y"] = 0;
@@ -153,7 +155,7 @@ int main() {
             auto msg = "42[\"estimate_marker\"," + msgJson.dump() + "]";
             // std::cout << msg << std::endl;
             ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
-          }  // end '(sensor_type.compare("L") == 0)' if
+          }  // end '((sensor_type.compare("L") == 0) || (sensor_type.compare("R") == 0))' if
 
         }  // end "telemetry" if
       } else {
