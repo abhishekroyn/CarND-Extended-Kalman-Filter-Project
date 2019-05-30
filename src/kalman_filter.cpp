@@ -1,6 +1,7 @@
 #include "kalman_filter.h"
 #include "FusionEKF.h"
 #include <math.h>
+#include <iostream>
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -61,20 +62,28 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   float vx = x_(2);
   float vy = x_(3);
 
-  float rho = sqrt(px * px + py * py);
+  float c1 = px * px + py * py;
+  float rho = sqrt(c1);
   float theta = atan2(py, px);
   float rho_dot = (px * vx + py * vy) / rho;
+
+  // check division by zero
+  if (fabs(c1) < 0.0001) {
+    std::cout << "UpdateEKF () - Error - Division by Zero" << std::endl;
+  }
+
   VectorXd z_pred = VectorXd(3);
   z_pred << rho, theta, rho_dot;
 
   VectorXd y = z - z_pred;
 
   // The Kalman filter is expecting small angle values between the range -pi and pi
-  if (y(1) >= (2*M_PI)) {
-    y(1) -= (2*M_PI);
-  }
-  else if (y(1) < (-2*M_PI)) {
-    y(1) += (2*M_PI);
+  while ((y(1) < -M_PI) || (y(1) > M_PI)) {
+    if (y(1) < -M_PI) {
+      y(1) += 2*M_PI;
+    } else {
+      y(1) -= 2*M_PI;
+    }
   }
 
   MatrixXd Ht = H_.transpose();
