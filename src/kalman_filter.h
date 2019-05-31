@@ -46,6 +46,12 @@ class KalmanFilter {
    */
   void UpdateEKF(const Eigen::VectorXd &z);
 
+  /**
+   * Updates the state by using rest of the Kalman Filter equations
+   * @param y The difference in measurement and prediction at k+1
+   */
+  void UpdateAny(const Eigen::VectorXd &y);
+
   // state vector
   Eigen::VectorXd x_;
 

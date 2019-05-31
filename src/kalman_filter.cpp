@@ -1,4 +1,7 @@
 #include "kalman_filter.h"
+#include "FusionEKF.h"
+#include <math.h>
+#include <iostream>
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -22,20 +25,74 @@ void KalmanFilter::Init(VectorXd &x_in, MatrixXd &P_in, MatrixXd &F_in,
   Q_ = Q_in;
 }
 
+// predict the state by using Kalman Filter equations
 void KalmanFilter::Predict() {
-  /**
-   * TODO: predict the state
-   */
+
+  x_ = F_ * x_;
+  MatrixXd Ft = F_.transpose();
+  P_ = F_ * P_ * Ft + Q_;
 }
 
+// update the state by using Kalman Filter equations
 void KalmanFilter::Update(const VectorXd &z) {
-  /**
-   * TODO: update the state by using Kalman Filter equations
-   */
+
+  VectorXd z_pred = H_ * x_;
+  VectorXd y = z - z_pred;
+
+  // call to update the state by using rest of the Kalman Filter equations
+  KalmanFilter::UpdateAny(y);
 }
 
+// update the state by using Extended Kalman Filter equations
 void KalmanFilter::UpdateEKF(const VectorXd &z) {
-  /**
-   * TODO: update the state by using Extended Kalman Filter equations
-   */
+
+  float px = x_(0);
+  float py = x_(1);
+  float vx = x_(2);
+  float vy = x_(3);
+
+  float c1 = px * px + py * py;
+  float rho = sqrt(c1);
+  float theta = atan2(py, px);
+  float rho_dot = (px * vx + py * vy) / rho;
+
+  // check division by zero
+  if (fabs(c1) < 0.0001) {
+    std::cout << "UpdateEKF () - Error - Division by Zero" << std::endl;
+  }
+
+  // current estimated values after conversion from polar to cartesian coordinates
+  VectorXd z_pred = VectorXd(3);
+  z_pred << rho, theta, rho_dot;
+
+  VectorXd y = z - z_pred;
+
+  // keep Kalman filter angle value small between the range -pi and pi
+  while ((y(1) < -M_PI) || (y(1) > M_PI)) {
+    if (y(1) < -M_PI) {
+      y(1) += 2*M_PI;
+    } else {
+      y(1) -= 2*M_PI;
+    }
+  }
+
+  // call to update the state by using rest of the Kalman Filter equations
+  KalmanFilter::UpdateAny(y);
+}
+
+// update the state by using rest of the Kalman Filter equations
+void KalmanFilter::UpdateAny(const VectorXd &y) {
+
+  // H jacobian will be used here for radar
+  MatrixXd Ht = H_.transpose();
+  MatrixXd S = H_ * P_ * Ht + R_;
+  MatrixXd Si = S.inverse();
+  MatrixXd PHt = P_ * Ht;
+  MatrixXd K = PHt * Si;
+
+  //new state
+  x_ = x_ + (K * y);
+  long x_size = x_.size();
+  MatrixXd I = MatrixXd::Identity(x_size, x_size);
+  P_ = (I - K * H_) * P_;
 }
