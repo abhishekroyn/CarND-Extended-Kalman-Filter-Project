@@ -136,5 +136,5 @@ Here are the final images with the required state and RMSE values on using the s
     - using lidar and radar together, the rmse errors were the lowest
     - using initialize measurement for radar (vx, vy) as (0, 0) or (0.1, 0.1), doesn't change the rmse values for dataset 1, as it has initial measurement set by lidar measurement which doesn't take into account (vx, vy) values
     - using initialize measurement for radar (vx, vy) as (0, 0) or (0.1, 0.1), does change the rmse values for dataset 2, as it has initial measurement set by radar measurement which does take into account (vx, vy) values
-    - using initialize measurement for radar (vx, vy) as (0, 0) produced better results with lower rmse values as compared to using (vx, vy) as (0.1, 0.1)
+    - using initialize measurement for radar (vx, vy) as (0, 0) produced better results with lower rmse values for vx and vy (though same rmse values for x and y) as compared to using (vx, vy) as (0.1, 0.1)
 
